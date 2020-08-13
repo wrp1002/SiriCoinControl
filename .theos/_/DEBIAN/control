@@ -1,0 +1,10 @@
+Package: com.wrp1002.siricoincontrol
+Name: SiriCoinControl
+Architecture: iphoneos-arm
+Description: An awesome MobileSubstrate tweak!
+Maintainer: Wes <wes.hamster@gmail.com>
+Author: Wes <wes.hamster@gmail.com>
+Section: Tweaks
+Depends: mobilesubstrate (>= 0.9.5000), ws.hbang.common (>= 1.2)
+Version: 0.0.1-80+debug
+Installed-Size: 160
