@@ -4,7 +4,7 @@
 #define kIdentifier @"com.wrp1002.siricoincontrol"
 #define kSettingsChangedNotification (CFStringRef)@"com.wrp1002.siricoincontrol/ReloadPrefs"
 #define kSettingsPath @"/var/mobile/Library/Preferences/com.wrp1002.siricoincontrol.plist"
-
+#define LogTweakName @"SiriCoinControl"
 
 
 //	=========================== Preference vars ===========================
@@ -21,7 +21,6 @@ bool siriVisible = false;
 
 //	=========================== Debugging stuff ===========================
 
-NSString *LogTweakName = @"SiriCoinControl";
 bool springboardReady = false;
 
 UIWindow* GetKeyWindow() {
@@ -77,7 +76,7 @@ void LogException(NSException *e) {
 //	=========================== Classes / Functions ===========================
 
 
-void Save() {
+inline void Save() {
 	Log(@"Saving to file");
 	//[preferences setInteger:lives forKey:@"kLives"];
 }
@@ -87,23 +86,12 @@ void Save() {
 
 %group SpringboardHooks
 
-	%hook SpringBoard
-
-		//	Called when springboard is finished launching
-		-(void)applicationDidFinishLaunching:(id)application {
-			%orig;
-			springboardReady = true;
-		}
-
-	%end
-
 	//	Check when Siri is opened and closed
 	%hook SiriPresentationViewController
 		- (void)_presentSiriViewControllerWithPresentationOptions:(id)arg1 requestOptions:(id)arg2 {
 			%orig;
 			Log(@"- (void)_presentSiriViewControllerWithPresentationOptions:(id)arg1 requestOptions:(id)arg2;");
 			siriVisible = true;
-			[preferences setInteger:(int)siriVisible forKey:@"kSiriVisible"];
 		}
 
 		/*
@@ -115,7 +103,6 @@ void Save() {
 			%orig;
 			Log(@"- (void)dismiss;");
 			siriVisible = false;
-			[preferences setInteger:(int)siriVisible forKey:@"kSiriVisible"];
 		}
 
 	%end
@@ -151,7 +138,6 @@ void Save() {
 
 			if (siriVisible) {
 				coinChoice = 1;
-				[preferences setInteger:coinChoice forKey:@"kCoinChoice"];
 			}
 			else
 				%orig;
@@ -161,7 +147,6 @@ void Save() {
 
 			if (siriVisible) {
 				coinChoice = 0;
-				[preferences setInteger:coinChoice forKey:@"kCoinChoice"];
 			}
 			else
 				%orig;
@@ -171,14 +156,12 @@ void Save() {
 			Log(@"volumeIncreasePressUp");
 
 			coinChoice = -1;
-			[preferences setInteger:coinChoice forKey:@"kCoinChoice"];
 			%orig;
 		}
 		-(void)volumeDecreasePressUp {
 			Log(@"volumeDecreasePressUp");
 
 			coinChoice = -1;
-			[preferences setInteger:coinChoice forKey:@"kCoinChoice"];
 			%orig;
 		}
 	%end
@@ -194,9 +177,6 @@ void Save() {
 		-(void)setText:(id)arg1 {
 			Log(@"SRServerUtteranceView -(void)setText:(NSString *)arg1");
 			
-			//	Since this hook isn't within SpringBoard, load variable from preferences
-			siriVisible = (bool)[preferences integerForKey:@"kSiriVisible"];
-
 			if (!siriVisible || !enabled) {
 				Log(@"No happen :(");
 				Log([NSString stringWithFormat:@"SiriVisible: %d   Enabled: %d", siriVisible, enabled]);
@@ -204,9 +184,6 @@ void Save() {
 			}
 			else {
 				Log(@"Happen! :)");
-
-				//	Since this hook isn't within SpringBoard, load variable from preferences
-				coinChoice = [preferences integerForKey:@"kCoinChoice"];
 
 				NSString *newText = arg1;
 
@@ -237,12 +214,14 @@ void Save() {
 	
 	preferences = [[HBPreferences alloc] initWithIdentifier:kIdentifier];
 	
-	NSString *bundleID = NSBundle.mainBundle.bundleIdentifier;
+	NSString const *bundleID = NSBundle.mainBundle.bundleIdentifier;
 	if ([bundleID isEqualToString:@"com.apple.springboard"]) {
 
+		springboardReady = true;
 		%init(SpringboardHooks);
+		
 	}
-	if ([bundleID isEqualToString:@"com.apple.siri"]) {
+	else {
 		
 
 		%init(SiriHooks);
