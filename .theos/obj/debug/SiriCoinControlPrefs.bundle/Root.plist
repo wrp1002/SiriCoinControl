@@ -10,7 +10,7 @@
 			<key>label</key>
 			<string>Options</string>
 			<key>footerText</key>
-			<string>Siri will say this phrase if you hold both volume buttons</string>
+			<string>Siri will say this phrase if you hold both volume buttons. If this setting is disabled and you hold both buttons, the result will be random</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -30,7 +30,7 @@
 			<key>cell</key>
 			<string>PSSwitchCell</string>
 			<key>label</key>
-			<string>Custom Output Enabled</string>
+			<string>Custom Phrase Enabled</string>
 			<key>key</key>
 			<string>kCustomPhraseEnabled</string>
 			<key>default</key>
@@ -49,6 +49,8 @@
 			<string>kCustomPhrase</string>
 			<key>noAutoCorrect</key>
 			<true/>
+			<key>action</key>
+			<string>CloseKeybaord</string>
 
 			<key>default</key>
 			<string>Oops, it rolled under the bed</string>
@@ -68,9 +70,9 @@
 			<key>cell</key>
 			<string>PSEditTextCell</string>
 			<key>label</key>
-			<string>Heads Uppercase Phrase:</string>
+			<string>Heads Phrase:</string>
 			<key>key</key>
-			<string>kHeadsUppercase</string>
+			<string>kHeadsPhrase</string>
 			<key>noAutoCorrect</key>
 			<true/>
 
@@ -83,44 +85,14 @@
 			<key>cell</key>
 			<string>PSEditTextCell</string>
 			<key>label</key>
-			<string>Heads Lowercase Phrase:</string>
+			<string>Tails Phrase:</string>
 			<key>key</key>
-			<string>kHeadsLowercase</string>
-			<key>noAutoCorrect</key>
-			<true/>
-
-			<key>default</key>
-			<string>heads</string>
-			<key>defaults</key>
-			<string>com.wrp1002.siricoincontrol</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSEditTextCell</string>
-			<key>label</key>
-			<string>Tails Uppercase Phrase:</string>
-			<key>key</key>
-			<string>kTailsUppercase</string>
+			<string>kTailsPhrase</string>
 			<key>noAutoCorrect</key>
 			<true/>
 
 			<key>default</key>
 			<string>Tails</string>
-			<key>defaults</key>
-			<string>com.wrp1002.siricoincontrol</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSEditTextCell</string>
-			<key>label</key>
-			<string>Tails Lowercase Phrase:</string>
-			<key>key</key>
-			<string>kTailsLowercase</string>
-			<key>noAutoCorrect</key>
-			<true/>
-
-			<key>default</key>
-			<string>tails</string>
 			<key>defaults</key>
 			<string>com.wrp1002.siricoincontrol</string>
 		</dict>
@@ -176,7 +148,7 @@
 			<key>label</key>
 			<string>Developer</string>
 			<key>footerText</key>
-			<string>Every little bit means a lot!</string>
+			<string>Any small donation is appreciated :)</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -212,7 +184,7 @@
 			<key>cell</key>
 			<string>PSButtonCell</string>
 			<key>label</key>
-			<string>Support future tweak development</string>
+			<string>Support future development</string>
 			<key>action</key>
 			<string>OpenPaypal</string>
 			<key>icon</key>

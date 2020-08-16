@@ -7,6 +7,14 @@
 		_specifiers = [self loadSpecifiersFromPlistName:@"Root" target:self];
 	}
 
+	NSArray *subviews = [self.view subviews];
+    for (UIView *subview in subviews) {
+		if ([subview class] == [UITableView class]) {
+			UITableView *tableView = (UITableView *)subview;
+			tableView.keyboardDismissMode =  UIScrollViewKeyboardDismissModeOnDrag;
+		}
+    }
+
 	return _specifiers;
 }
 
@@ -49,6 +57,10 @@
 	[fm removeItemAtPath: @"/var/mobile/Library/Preferences/com.wrp1002.siricoincontrol.plist" error: nil];
 
 	[self Respring];
+}
+
+-(void)DismissKeybaord {
+	[self.view endEditing:YES];
 }
 
 @end

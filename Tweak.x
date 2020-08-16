@@ -10,10 +10,8 @@
 
 bool enabled;
 bool customPhraseEnabled;
-NSString *headsUpperPhrase;
-NSString *headsLowerPhrase;
-NSString *tailsUpperPhrase;
-NSString *tailsLowerPhrase;
+NSString *headsPhrase;
+NSString *tailsPhrase;
 NSString *customPhrase;
 
 
@@ -26,6 +24,7 @@ static MRYIPCCenter* center;
 int coinChoice = -1;
 bool siriVisible = false;
 typedef NS_ENUM(NSUInteger, CoinChoices) {
+	RANDOM,
     HEADS,
 	TAILS,
 	CUSTOM
@@ -119,14 +118,30 @@ void LogException(NSException *e) {
 static SiriCoinControlServer *server;
 
 NSString *ReplaceHeadsAndTails(NSString *text) {
-	if (coinChoice == 0) {
-		text = [text stringByReplacingOccurrencesOfString:headsUpperPhrase withString:tailsUpperPhrase];
-		text = [text stringByReplacingOccurrencesOfString:headsLowerPhrase withString:tailsLowerPhrase];
+	if (coinChoice == RANDOM)
+		return text;
+
+	NSString *searchFor;
+	NSString *replaceWith;
+
+	if (coinChoice == HEADS) {
+		searchFor = [tailsPhrase lowercaseString];
+		replaceWith = [headsPhrase lowercaseString];
 	}
-	else if (coinChoice == 1) {
-		text = [text stringByReplacingOccurrencesOfString:tailsUpperPhrase withString:headsUpperPhrase];
-		text = [text stringByReplacingOccurrencesOfString:tailsLowerPhrase withString:headsLowerPhrase];
+	else if (coinChoice == TAILS) {
+		searchFor = [headsPhrase lowercaseString];
+		replaceWith = [tailsPhrase lowercaseString];
 	}
+	else if (coinChoice == CUSTOM) {
+		if (customPhraseEnabled)
+			return customPhrase;
+		else
+			return text;
+	}
+
+	text = [text stringByReplacingOccurrencesOfString:searchFor withString:replaceWith];
+	text = [text stringByReplacingOccurrencesOfString:[searchFor capitalizedString] withString:[replaceWith capitalizedString]];
+
 	return text;
 }
 
@@ -185,33 +200,42 @@ NSString *ReplaceHeadsAndTails(NSString *text) {
 		-(void)volumeIncreasePressDown {
 			Log(@"volumeIncreasePressDown");
 
-			if (enabled && siriVisible) {
-				
-				coinChoice = 1;
-			}
-			else
+			if (!enabled || !siriVisible)
 				%orig;
+
+			if (coinChoice == RANDOM)
+				coinChoice = HEADS;
+			else
+				coinChoice = CUSTOM;
 		}
 		-(void)volumeDecreasePressDown {
 			Log(@"volumeDecreasePressDown");
 
-			if (enabled && siriVisible) {
-				coinChoice = 0;
-			}
-			else
+			if (!enabled || !siriVisible)
 				%orig;
+
+			if (coinChoice == RANDOM) 
+				coinChoice = TAILS;
+			else 
+				coinChoice = CUSTOM;
 		}
 
 		-(void)volumeIncreasePressUp {
 			Log(@"volumeIncreasePressUp");
 
-			coinChoice = -1;
+			if (coinChoice == HEADS)
+				coinChoice = RANDOM;
+			else
+				coinChoice = TAILS;
 			%orig;
 		}
 		-(void)volumeDecreasePressUp {
 			Log(@"volumeDecreasePressUp");
 
-			coinChoice = -1;
+			if (coinChoice == TAILS)
+				coinChoice = RANDOM;
+			else
+				coinChoice = HEADS;
 			%orig;
 		}
 	%end
@@ -256,10 +280,8 @@ NSString *ReplaceHeadsAndTails(NSString *text) {
 	[preferences registerBool:&enabled default:true forKey:@"kEnabled"];
 	[preferences registerBool:&customPhraseEnabled default:false forKey:@"kCustomPhraseEnabled"];
 
-	[preferences registerObject:&headsUpperPhrase default:@"Heads" forKey:@"kHeadsUppercase"];
-	[preferences registerObject:&headsLowerPhrase default:@"heads" forKey:@"kHeadsLowercase"];
-	[preferences registerObject:&tailsUpperPhrase default:@"Tails" forKey:@"kTailsUppercase"];
-	[preferences registerObject:&tailsLowerPhrase default:@"tails" forKey:@"kTailsLowercase"];
+	[preferences registerObject:&headsPhrase default:@"Heads" forKey:@"kHeadsPhrase"];
+	[preferences registerObject:&tailsPhrase default:@"Tails" forKey:@"kTailsPhrase"];
 	
 	[preferences registerObject:&customPhrase default:@"Oops, it rolled under the bed" forKey:@"kCustomPhrase"];
 
