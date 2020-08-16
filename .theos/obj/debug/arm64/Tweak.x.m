@@ -154,7 +154,7 @@ NSString *ReplaceHeadsAndTails(NSString *text) {
 #define _LOGOS_RETURN_RETAINED
 #endif
 
-@class SiriPresentationViewController; @class VSSpeechRequest; @class SBVolumeHardwareButtonActions; @class SRServerUtteranceView; @class SpringBoard; 
+@class VSSpeechRequest; @class SpringBoard; @class SiriPresentationViewController; @class SRServerUtteranceView; @class SBVolumeHardwareButtonActions; 
 
 
 #line 135 "Tweak.x"
