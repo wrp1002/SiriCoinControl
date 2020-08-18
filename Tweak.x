@@ -14,7 +14,6 @@ NSString *headsPhrase;
 NSString *tailsPhrase;
 NSString *customPhrase;
 
-
 //	=========================== Other vars ===========================
 
 int startupDelay = 5;
@@ -118,6 +117,8 @@ void LogException(NSException *e) {
 static SiriCoinControlServer *server;
 
 NSString *ReplaceHeadsAndTails(NSString *text) {
+	NSString *oldText = text;
+
 	if (coinChoice == RANDOM)
 		return text;
 
@@ -141,6 +142,8 @@ NSString *ReplaceHeadsAndTails(NSString *text) {
 
 	text = [text stringByReplacingOccurrencesOfString:searchFor withString:replaceWith];
 	text = [text stringByReplacingOccurrencesOfString:[searchFor capitalizedString] withString:[replaceWith capitalizedString]];
+
+	Log([NSString stringWithFormat:@"Old: %@   New: %@", oldText, text]);
 
 	return text;
 }
@@ -222,21 +225,21 @@ NSString *ReplaceHeadsAndTails(NSString *text) {
 
 		-(void)volumeIncreasePressUp {
 			Log(@"volumeIncreasePressUp");
+			%orig;
 
 			if (coinChoice == HEADS)
 				coinChoice = RANDOM;
 			else
 				coinChoice = TAILS;
-			%orig;
 		}
 		-(void)volumeDecreasePressUp {
 			Log(@"volumeDecreasePressUp");
+			%orig;
 
 			if (coinChoice == TAILS)
 				coinChoice = RANDOM;
 			else
 				coinChoice = HEADS;
-			%orig;
 		}
 	%end
 

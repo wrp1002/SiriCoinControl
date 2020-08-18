@@ -17,7 +17,6 @@ NSString *customPhrase;
 
 
 
-
 int startupDelay = 5;
 HBPreferences *preferences;
 static MRYIPCCenter* center;
@@ -119,6 +118,8 @@ void LogException(NSException *e) {
 static SiriCoinControlServer *server;
 
 NSString *ReplaceHeadsAndTails(NSString *text) {
+	NSString *oldText = text;
+
 	if (coinChoice == RANDOM)
 		return text;
 
@@ -142,6 +143,8 @@ NSString *ReplaceHeadsAndTails(NSString *text) {
 
 	text = [text stringByReplacingOccurrencesOfString:searchFor withString:replaceWith];
 	text = [text stringByReplacingOccurrencesOfString:[searchFor capitalizedString] withString:[replaceWith capitalizedString]];
+
+	Log([NSString stringWithFormat:@"Old: %@   New: %@", oldText, text]);
 
 	return text;
 }
@@ -169,10 +172,10 @@ NSString *ReplaceHeadsAndTails(NSString *text) {
 #define _LOGOS_RETURN_RETAINED
 #endif
 
-@class SBVolumeHardwareButtonActions; @class VSSpeechRequest; @class SRServerUtteranceView; @class SiriPresentationViewController; @class SpringBoard; 
+@class SpringBoard; @class SRServerUtteranceView; @class SBVolumeHardwareButtonActions; @class SiriPresentationViewController; @class VSSpeechRequest; 
 
 
-#line 150 "Tweak.x"
+#line 153 "Tweak.x"
 static void (*_logos_orig$SpringboardHooks$SpringBoard$applicationDidFinishLaunching$)(_LOGOS_SELF_TYPE_NORMAL SpringBoard* _LOGOS_SELF_CONST, SEL, id); static void _logos_method$SpringboardHooks$SpringBoard$applicationDidFinishLaunching$(_LOGOS_SELF_TYPE_NORMAL SpringBoard* _LOGOS_SELF_CONST, SEL, id); static void (*_logos_orig$SpringboardHooks$SiriPresentationViewController$_presentSiriViewControllerWithPresentationOptions$requestOptions$)(_LOGOS_SELF_TYPE_NORMAL SiriPresentationViewController* _LOGOS_SELF_CONST, SEL, id, id); static void _logos_method$SpringboardHooks$SiriPresentationViewController$_presentSiriViewControllerWithPresentationOptions$requestOptions$(_LOGOS_SELF_TYPE_NORMAL SiriPresentationViewController* _LOGOS_SELF_CONST, SEL, id, id); static void (*_logos_orig$SpringboardHooks$SiriPresentationViewController$dismiss)(_LOGOS_SELF_TYPE_NORMAL SiriPresentationViewController* _LOGOS_SELF_CONST, SEL); static void _logos_method$SpringboardHooks$SiriPresentationViewController$dismiss(_LOGOS_SELF_TYPE_NORMAL SiriPresentationViewController* _LOGOS_SELF_CONST, SEL); static void (*_logos_orig$SpringboardHooks$VSSpeechRequest$setText$)(_LOGOS_SELF_TYPE_NORMAL VSSpeechRequest* _LOGOS_SELF_CONST, SEL, NSString *); static void _logos_method$SpringboardHooks$VSSpeechRequest$setText$(_LOGOS_SELF_TYPE_NORMAL VSSpeechRequest* _LOGOS_SELF_CONST, SEL, NSString *); static void (*_logos_orig$SpringboardHooks$SBVolumeHardwareButtonActions$volumeIncreasePressDown)(_LOGOS_SELF_TYPE_NORMAL SBVolumeHardwareButtonActions* _LOGOS_SELF_CONST, SEL); static void _logos_method$SpringboardHooks$SBVolumeHardwareButtonActions$volumeIncreasePressDown(_LOGOS_SELF_TYPE_NORMAL SBVolumeHardwareButtonActions* _LOGOS_SELF_CONST, SEL); static void (*_logos_orig$SpringboardHooks$SBVolumeHardwareButtonActions$volumeDecreasePressDown)(_LOGOS_SELF_TYPE_NORMAL SBVolumeHardwareButtonActions* _LOGOS_SELF_CONST, SEL); static void _logos_method$SpringboardHooks$SBVolumeHardwareButtonActions$volumeDecreasePressDown(_LOGOS_SELF_TYPE_NORMAL SBVolumeHardwareButtonActions* _LOGOS_SELF_CONST, SEL); static void (*_logos_orig$SpringboardHooks$SBVolumeHardwareButtonActions$volumeIncreasePressUp)(_LOGOS_SELF_TYPE_NORMAL SBVolumeHardwareButtonActions* _LOGOS_SELF_CONST, SEL); static void _logos_method$SpringboardHooks$SBVolumeHardwareButtonActions$volumeIncreasePressUp(_LOGOS_SELF_TYPE_NORMAL SBVolumeHardwareButtonActions* _LOGOS_SELF_CONST, SEL); static void (*_logos_orig$SpringboardHooks$SBVolumeHardwareButtonActions$volumeDecreasePressUp)(_LOGOS_SELF_TYPE_NORMAL SBVolumeHardwareButtonActions* _LOGOS_SELF_CONST, SEL); static void _logos_method$SpringboardHooks$SBVolumeHardwareButtonActions$volumeDecreasePressUp(_LOGOS_SELF_TYPE_NORMAL SBVolumeHardwareButtonActions* _LOGOS_SELF_CONST, SEL); 
 
 	
@@ -248,21 +251,21 @@ static void (*_logos_orig$SpringboardHooks$SpringBoard$applicationDidFinishLaunc
 
 		static void _logos_method$SpringboardHooks$SBVolumeHardwareButtonActions$volumeIncreasePressUp(_LOGOS_SELF_TYPE_NORMAL SBVolumeHardwareButtonActions* _LOGOS_SELF_CONST __unused self, SEL __unused _cmd) {
 			Log(@"volumeIncreasePressUp");
+			_logos_orig$SpringboardHooks$SBVolumeHardwareButtonActions$volumeIncreasePressUp(self, _cmd);
 
 			if (coinChoice == HEADS)
 				coinChoice = RANDOM;
 			else
 				coinChoice = TAILS;
-			_logos_orig$SpringboardHooks$SBVolumeHardwareButtonActions$volumeIncreasePressUp(self, _cmd);
 		}
 		static void _logos_method$SpringboardHooks$SBVolumeHardwareButtonActions$volumeDecreasePressUp(_LOGOS_SELF_TYPE_NORMAL SBVolumeHardwareButtonActions* _LOGOS_SELF_CONST __unused self, SEL __unused _cmd) {
 			Log(@"volumeDecreasePressUp");
+			_logos_orig$SpringboardHooks$SBVolumeHardwareButtonActions$volumeDecreasePressUp(self, _cmd);
 
 			if (coinChoice == TAILS)
 				coinChoice = RANDOM;
 			else
 				coinChoice = HEADS;
-			_logos_orig$SpringboardHooks$SBVolumeHardwareButtonActions$volumeDecreasePressUp(self, _cmd);
 		}
 	
 
@@ -298,7 +301,7 @@ static void (*_logos_orig$SiriHooks$SRServerUtteranceView$setText$)(_LOGOS_SELF_
 
 
 
-static __attribute__((constructor)) void _logosLocalCtor_dab2fc59(int __unused argc, char __unused **argv, char __unused **envp) {
+static __attribute__((constructor)) void _logosLocalCtor_6a59d653(int __unused argc, char __unused **argv, char __unused **envp) {
 	Log([NSString stringWithFormat:@"============== %@ started ==============", LogTweakName]);
 
 	preferences = [[HBPreferences alloc] initWithIdentifier:kIdentifier];

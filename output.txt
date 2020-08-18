@@ -6,34 +6,14 @@
 	<array>
 		<dict>
 			<key>cell</key>
-			<string>PSGroupCell</string>
-			<key>label</key>
-			<string>Options</string>
-		</dict>
-
-		<dict>
-			<key>cell</key>
-			<string>PSSwitchCell</string>
-			<key>label</key>
-			<string>Enabled</string>
+			<string>PSSliderCell</string>
 			<key>key</key>
-			<string>kEnabled</string>
-			<key>default</key>
+			<string>kSlider</string>
+			<key>max</key>
+			<integer>10</integer>
+			<key>showValue</key>
 			<true/>
-			<key>defaults</key>
-			<string>com.wrp1002.siricoincontrol</string>
-			<key>PostNotification</key>
-			<string>com.wrp1002.siricoincontrol/ReloadPrefs</string>
-		</dict>
-
-		<dict>
-			<key>cell</key>
-			<string>PSSwitchCell</string>
-			<key>label</key>
-			<string>Custom Output Enabled</string>
-			<key>key</key>
-			<string>kCustom</string>
-			<key>default</key>
+			<key>isSegmented</key>
 			<false/>
 			<key>defaults</key>
 			<string>com.wrp1002.siricoincontrol</string>
@@ -45,14 +25,26 @@
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>label</key>
-			<string>Custom Heads Phrase</string>
+			<string>Release Delay</string>
+			<key>footerText</key>
+			<string>This will wait the specified time before registering that you let go of a volume button. Useful if you want to press instead of hold the volume buttons</string>
 		</dict>
 
 		<dict>
 			<key>cell</key>
-			<string>PSGroupCell</string>
-			<key>label</key>
-			<string>Custom Tails Phrase</string>
+			<string>PSSliderCell</string>
+			<key>key</key>
+			<string>kReleaseDelay</string>
+			<key>max</key>
+			<real>3.0</real>
+			<key>showValue</key>
+			<true/>
+			<key>isSegmented</key>
+			<false/>
+			<key>defaults</key>
+			<string>com.wrp1002.siricoincontrol</string>
+			<key>PostNotification</key>
+			<string>com.wrp1002.siricoincontrol/ReloadPrefs</string>
 		</dict>
 
 

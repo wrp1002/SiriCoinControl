@@ -49,13 +49,13 @@
 			<string>kCustomPhrase</string>
 			<key>noAutoCorrect</key>
 			<true/>
-			<key>action</key>
-			<string>CloseKeybaord</string>
 
 			<key>default</key>
 			<string>Oops, it rolled under the bed</string>
 			<key>defaults</key>
 			<string>com.wrp1002.siricoincontrol</string>
+			<key>PostNotification</key>
+			<string>com.wrp1002.siricoincontrol/ReloadPrefs</string>
 		</dict>
 
 		<dict>
@@ -80,6 +80,8 @@
 			<string>Heads</string>
 			<key>defaults</key>
 			<string>com.wrp1002.siricoincontrol</string>
+			<key>PostNotification</key>
+			<string>com.wrp1002.siricoincontrol/ReloadPrefs</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -95,6 +97,8 @@
 			<string>Tails</string>
 			<key>defaults</key>
 			<string>com.wrp1002.siricoincontrol</string>
+			<key>PostNotification</key>
+			<string>com.wrp1002.siricoincontrol/ReloadPrefs</string>
 		</dict>
 
 		<dict>
