@@ -1,0 +1,16 @@
+{
+	"title": "SiriCoinControl",
+	"description": "This tweak lets you control the outcome of Siri coin flips! Simply hold volume up (heads) or volume down (tails) before Siri responds and the outcome will always be in your control! Currently no options to configure.<br><br><b>Note: </b> You will no longer be able to control the volume while Siri is active because this tweak cancels the button presses in order to hide the fact that you are controlling the coin",
+	"compatibility": "Made for iOS 13",
+	"screenshots": ["screenshot1.png"],
+	"changelog": [
+		{
+			"version": "1.0.0",
+			"changes": ["Initial Release"]
+		}, 
+		{
+			"version": "1.1.0", 
+			"changes": ["Added settings to support other languages", "Custom phrase can be set for when both volume buttons are held"]
+		}
+	]
+}
