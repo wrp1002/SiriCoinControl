@@ -19,11 +19,16 @@
 }
 
 -(void)Respring {
-    pid_t pid;
-	int status;
-	const char* args[] = {"killall", "-9", "SpringBoard", NULL};
-	posix_spawn(&pid, "/usr/bin/killall", NULL, NULL, (char* const*)args, NULL);
-	waitpid(pid, &status, WEXITED);//wait untill the process completes (only if you need to do that)
+    // From Cephei since other methods I tried didn't work
+	[[NSBundle bundleWithPath:@"/System/Library/PrivateFrameworks/FrontBoardServices.framework"] load];
+	[[NSBundle bundleWithPath:@"/System/Library/PrivateFrameworks/SpringBoardServices.framework"] load];
+
+	Class $FBSSystemService = NSClassFromString(@"FBSSystemService");
+	Class $SBSRelaunchAction = NSClassFromString(@"SBSRelaunchAction");
+	if ($FBSSystemService && $SBSRelaunchAction) {
+		SBSRelaunchAction *restartAction = [$SBSRelaunchAction actionWithReason:@"RestartRenderServer" options:SBSRelaunchActionOptionsFadeToBlackTransition targetURL:nil];
+		[[$FBSSystemService sharedService] sendActions:[NSSet setWithObject:restartAction] withResult:nil];
+	}
 }
 
 -(void)OpenGithub {
@@ -51,12 +56,16 @@
 }
 
 -(void)Reset {
-	[[[HBPreferences alloc] initWithIdentifier: @"com.wrp1002.siricoincontrol"] removeAllObjects];
+	NSUserDefaults *prefs = [[NSUserDefaults alloc] initWithSuiteName:BUNDLE];
+	NSArray *allKeys = [prefs dictionaryRepresentation].allKeys;
 
-	NSFileManager *fm = [NSFileManager defaultManager];
-	[fm removeItemAtPath: @"/var/mobile/Library/Preferences/com.wrp1002.siricoincontrol.plist" error: nil];
+	for (NSString *key in allKeys) {
+		[prefs removeObjectForKey:key];
+	}
+	[prefs synchronize];
 
-	[self Respring];
+	[self reloadSpecifiers];
+	CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), BUNDLE_NOTIFY, nil, nil, true);
 }
 
 -(void)DismissKeybaord {
