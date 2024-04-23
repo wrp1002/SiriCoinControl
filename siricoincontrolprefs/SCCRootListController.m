@@ -51,7 +51,7 @@
 
 -(void)OpenEmail {
 	UIApplication *application = [UIApplication sharedApplication];
-	NSURL *URL = [NSURL URLWithString:@"mailto:wes.hamster@gmail.com?subject=SiriCoinControl"];
+	NSURL *URL = [NSURL URLWithString:@"mailto:wes.hamster@gmail.com?subject=SiriCoinControl16"];
 	[application openURL:URL options:@{} completionHandler:nil];
 }
 
