@@ -176,22 +176,6 @@ void NotifyPreferences() {
 
 	%end
 
-	//	Change speech output phrase of Siri
-	%hook VSSpeechRequest
-		-(void)setText:(NSString *)arg1 {
-			//[Debug Log:@"VSSpeechRequest  -(void)setText:(NSString *)arg1"];
-
-			if (!enabled) {
-				%orig(arg1);
-				return;
-			}
-
-			NSString *newText = ReplaceHeadsAndTails(arg1);
-
-			%orig(newText);
-		}
-	%end
-
 	//	Functions used to detect volume buttons
 	%hook SBVolumeHardwareButtonActions
 		%new
@@ -271,23 +255,6 @@ void NotifyPreferences() {
 
 
 %group SiriHooks
-
-	//	I couldn't find a way within SpringBoard to change the speech output of Siri, so hook into this Siri function to do so
-	%hook SRServerUtteranceView
-		-(void)setText:(id)arg1 {
-			//[Debug Log:@"SRServerUtteranceView -(void)setText:(NSString *)arg1"];
-
-			if (!enabled) {
-				%orig(arg1);
-			}
-			else {
-				NSString *newText = ReplaceHeadsAndTails(arg1);
-				%orig(newText);
-			}
-		}
-	%end
-
-
 	%hook SiriSharedUICompactServerUtteranceView
 		- (void)_setTextForLabel:(id)arg1 text:(id)arg2 {
 			//[Debug Log:[NSString stringWithFormat:@"- (void)_setTextForLabel  %@", arg2]];
