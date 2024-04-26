@@ -1,6 +1,7 @@
 #import "Debug.h"
 
 //int __isOSVersionAtLeast(int major, int minor, int patch) { NSOperatingSystemVersion version; version.majorVersion = major; version.minorVersion = minor; version.patchVersion = patch; return [[NSProcessInfo processInfo] isOperatingSystemAtLeastVersion:version]; }
+extern NSString *bundleID;
 
 @implementation Debug
 	static bool springboardReady = false;
@@ -58,7 +59,10 @@
 
 	//	Show log with tweak name as prefix for easy grep
 	+(void)Log:(NSString *)msg {
-		NSLog(@"%@: %@", TWEAK_NAME, msg);
+		if (!loggingEnabled)
+			return;
+
+		NSLog(@"%@ (%@): %@", TWEAK_NAME, bundleID, msg);
 	}
 
 	//	Log exception info

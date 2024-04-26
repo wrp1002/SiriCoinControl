@@ -1,36 +1,43 @@
-#import <Foundation/Foundation.h>
-#import <Foundation/NSDistributedNotificationCenter.h>
-#import <objc/runtime.h>
-#import <substrate.h>
 #import "Tweak.h"
-
-#define TWEAK_NAME @"SiriCoinControl"
-#define BUNDLE [NSString stringWithFormat:@"com.wrp1002.%@", [TWEAK_NAME lowercaseString]]
-#define BUNDLE_NOTIFY (CFStringRef)[NSString stringWithFormat:@"%@/ReloadPrefs", BUNDLE]
-
-#define COIN_CHOICE_REQUEST @"com.wrp1002.SiriCoinControlServer.CoinChoice"
-#define COIN_CHOICE_RESPONSE @"com.wrp1002.SiriCoinControlServer.CoinChoiceResponse"
-#define PREFS_REQUEST @"com.wrp1002.SiriCoinControlServer.PrefsRequest"
-#define PREFS_RESPONSE @"com.wrp1002.SiriCoinControlServer.PrefsResponse"
-
-
 
 //	=========================== Preference vars ===========================
 
 bool enabled;
 bool customPhraseEnabled;
+bool loggingEnabled;
 NSString *headsPhrase;
 NSString *tailsPhrase;
 NSString *customPhrase;
 
 NSUserDefaults *prefs = nil;
 
+
 extern void NotifyPreferences();
+
+void UpdatePrefs() {
+	[Debug Log:@"prefs changed!"];
+	enabled = [prefs boolForKey:@"kEnabled"];
+	loggingEnabled = [prefs boolForKey:@"kLoggingEnabled"];
+	customPhraseEnabled = [prefs boolForKey:@"kCustomPhraseEnabled"];
+
+	headsPhrase = [prefs stringForKey:@"kHeadsPhrase"];
+	tailsPhrase = [prefs stringForKey:@"kTailsPhrase"];
+	customPhrase = [prefs stringForKey:@"kCustomPhrase"];
+
+	[Debug Log:[NSString stringWithFormat:@"loaded prefs: %i, %i, %@, %@, %@", enabled, customPhraseEnabled, headsPhrase, tailsPhrase, customPhrase]];
+}
+
+void PrefsChangeCallback(CFNotificationCenterRef center, void *observer, CFNotificationName name, const void *object, CFDictionaryRef userInfo) {
+	[Debug Log:[NSString stringWithFormat:@"prefs changed callback called"]];
+	UpdatePrefs();
+	NotifyPreferences();
+}
 
 void InitPrefs(void) {
 	if (!prefs) {
 		NSDictionary *defaultPrefs = @{
 			@"kEnabled": @YES,
+			@"kLoggingnabled": @NO,
 			@"kCustomPhraseEnabled": @NO,
 			@"kHeadsPhrase": @"Heads",
 			@"kTailsPhrase": @"Tails",
@@ -38,37 +45,28 @@ void InitPrefs(void) {
 		};
 		prefs = [[NSUserDefaults alloc] initWithSuiteName:BUNDLE];
 		[prefs registerDefaults:defaultPrefs];
+
+		CFNotificationCenterAddObserver(
+			CFNotificationCenterGetDarwinNotifyCenter(),
+			NULL,
+			&PrefsChangeCallback,
+			BUNDLE_NOTIFY,
+			NULL,
+			0
+		);
 	}
 }
 
 void SetPrefsFromDict(NSDictionary *prefsDict) {
 	enabled = [[prefsDict valueForKey:@"kEnabled"] integerValue];
+	loggingEnabled = [[prefsDict valueForKey:@"kLoggingEnabled"] integerValue];
 	customPhraseEnabled = [[prefsDict valueForKey:@"kCustomPhraseEnabled"] integerValue];
 	headsPhrase = [prefsDict valueForKey:@"kHeadsPhrase"];
 	tailsPhrase = [prefsDict valueForKey:@"kTailsPhrase"];
 	customPhrase = [prefsDict valueForKey:@"kCustomPhrase"];
-	//[Debug Log:[NSString stringWithFormat:@"loaded prefs from dict: %i %i %@ %@ %@", enabled, customPhraseEnabled, headsPhrase, tailsPhrase, customPhrase]];
+	[Debug Log:[NSString stringWithFormat:@"loaded prefs from dict: %i, %i, %@, %@, %@", enabled, customPhraseEnabled, headsPhrase, tailsPhrase, customPhrase]];
 }
 
-void UpdatePrefs() {
-	//[Debug Log:@"prefs changed!"];
-	enabled = [prefs boolForKey:@"kEnabled"];
-	customPhraseEnabled = [prefs boolForKey:@"kCustomPhraseEnabled"];
-
-	headsPhrase = [prefs stringForKey:@"kHeadsPhrase"];
-	tailsPhrase = [prefs stringForKey:@"kTailsPhrase"];
-	customPhrase = [prefs stringForKey:@"kCustomPhrase"];
-
-	//[Debug Log:[NSString stringWithFormat:@"customPhraseEnabled: %i  %@", customPhraseEnabled, customPhrase]];
-}
-
-void PrefsChangeCallback(CFNotificationCenterRef center, void *observer, CFNotificationName name, const void *object, CFDictionaryRef userInfo) {
-	NSString *bundleID = NSBundle.mainBundle.bundleIdentifier;
-	//[Debug Log:[NSString stringWithFormat:@"prefs changed callback from bundle: %@", bundleID]];
-
-	UpdatePrefs();
-	NotifyPreferences();
-}
 
 
 //	=========================== Other vars ===========================
@@ -76,6 +74,7 @@ void PrefsChangeCallback(CFNotificationCenterRef center, void *observer, CFNotif
 typedef NS_ENUM(NSUInteger, CoinChoices) { RANDOM, HEADS, TAILS, CUSTOM };
 bool siriVisible = false;
 int coinChoice = RANDOM;
+NSString *bundleID;
 
 
 //	=========================== Classes / Functions ===========================
@@ -108,7 +107,7 @@ NSString *ReplaceHeadsAndTails(NSString *text) {
 	text = [text stringByReplacingOccurrencesOfString:searchFor withString:replaceWith];
 	text = [text stringByReplacingOccurrencesOfString:[searchFor capitalizedString] withString:[replaceWith capitalizedString]];
 
-	//[Debug Log:[NSString stringWithFormat:@"(ReplaceHeadsAndTails)  Old: %@   New: %@", oldText, text]];
+	[Debug Log:[NSString stringWithFormat:@"ReplaceHeadsAndTails made replacement!   Old: %@   New: %@", oldText, text]];
 	return text;
 }
 
@@ -117,7 +116,7 @@ void NotifyCoinChoice() {
 	if (!siriVisible)
 		return;
 
-	//[Debug Log:[NSString stringWithFormat:@"sending coin notifiction for %i", coinChoice]];
+	[Debug Log:[NSString stringWithFormat:@"sending coin notifiction for %i", coinChoice]];
 	NSDictionary *responseData = @{@"coinChoice": @(coinChoice)};
 	[[NSDistributedNotificationCenter defaultCenter] postNotificationName:COIN_CHOICE_RESPONSE object:nil userInfo:responseData];
 }
@@ -127,9 +126,10 @@ void NotifyPreferences() {
 	if (!siriVisible)
 		return;
 
-	//[Debug Log:@"sending prefs notification from SpringBoard"];
+	[Debug Log:@"sending prefs notification"];
 	NSDictionary *prefsDict = @{
 		@"kEnabled": @(enabled),
+		@"kLoggingEnabled": @(loggingEnabled),
 		@"kCustomPhraseEnabled": @(customPhraseEnabled),
 		@"kHeadsPhrase": headsPhrase,
 		@"kTailsPhrase": tailsPhrase,
@@ -146,7 +146,7 @@ void NotifyPreferences() {
 	%hook SiriPresentationViewController
 		- (void)_presentSiriViewControllerWithPresentationOptions:(id)arg1 requestOptions:(id)arg2 {
 			%orig;
-			//[Debug Log:@"- (void)_presentSiriViewControllerWithPresentationOptions:(id)arg1 requestOptions:(id)arg2;"];
+			[Debug Log:@"- (void)_presentSiriViewControllerWithPresentationOptions:(id)arg1 requestOptions:(id)arg2;"];
 			siriVisible = true;
 
 			// Send notifications to Siri process once it becomes active
@@ -154,22 +154,22 @@ void NotifyPreferences() {
 			NotifyPreferences();
 		}
 		- (void)dismiss {
-			//[Debug Log:@"- (void)dismiss;"];
+			[Debug Log:@"SiriPresentationViewController- (void)dismiss;"];
 			siriVisible = false;
 			%orig;
 		}
 		- (void)dismissSiriSetupViewController:(id)arg1 {
-			//[Debug Log:@"- (void)dismissSiriSetupViewController:(id)arg1"];
+			[Debug Log:@"SiriPresentationViewController- (void)dismissSiriSetupViewController:(id)arg1"];
 			siriVisible = false;
 			%orig;
 		}
 		- (void)dismissSiriViewController:(id)arg1 withReason:(unsigned long long)arg2 {
-			//[Debug Log:@"- (void)dismissSiriViewController:(id)arg1 withReason:(unsigned long long)arg2"];
+			[Debug Log:@"SiriPresentationViewController- (void)dismissSiriViewController:(id)arg1 withReason:(unsigned long long)arg2"];
 			siriVisible = false;
 			%orig;
 		}
 		- (void)dismissWithOptions:(id)arg1 {
-			//[Debug Log:@"- (void)dismissWithOptions:(id)arg1"];
+			[Debug Log:@"SiriPresentationViewController- (void)dismissWithOptions:(id)arg1"];
 			siriVisible = false;
 			%orig;
 		}
@@ -196,7 +196,7 @@ void NotifyPreferences() {
 		}
 
 		-(void)volumeIncreasePressDown {
-			//[Debug Log:@"volumeIncreasePressDown"];
+			[Debug Log:@"volume increase pressed"];
 
 			if (!enabled || !siriVisible)
 				%orig;
@@ -204,31 +204,15 @@ void NotifyPreferences() {
 				[self handleSCCVolumeIncreasePressDown];
 		}
 		-(void)volumeIncreasePressDownWithModifiers:(long long)arg1 {
-			//[Debug Log:@"volumeIncreasePressDown"];
+			[Debug Log:@"volume increase pressed"];
 
 			if (!enabled || !siriVisible)
 				%orig;
 			else
 				[self handleSCCVolumeIncreasePressDown];
 		}
-
-		-(void)volumeDecreasePressDown {
-			//[Debug Log:@"volumeDecreasePressDown"];
-			if (!enabled || !siriVisible)
-				%orig;
-			else
-				[self handleSCCVolumeDecreasePressDown];
-		}
-		-(void)volumeDecreasePressDownWithModifiers:(long long)arg1 {
-			//[Debug Log:@"volumeDecreasePressDown"];
-			if (!enabled || !siriVisible)
-				%orig;
-			else
-				[self handleSCCVolumeDecreasePressDown];
-		}
-
 		-(void)volumeIncreasePressUp {
-			//[Debug Log:@"volumeIncreasePressUp"];
+			[Debug Log:@"volume increase released"];
 			%orig;
 
 			if (coinChoice == HEADS)
@@ -238,8 +222,24 @@ void NotifyPreferences() {
 
 			NotifyCoinChoice();
 		}
+
+		-(void)volumeDecreasePressDown {
+			[Debug Log:@"volume decrease pressed"];
+			if (!enabled || !siriVisible)
+				%orig;
+			else
+				[self handleSCCVolumeDecreasePressDown];
+		}
+		-(void)volumeDecreasePressDownWithModifiers:(long long)arg1 {
+			[Debug Log:@"volume decrease pressed"];
+			if (!enabled || !siriVisible)
+				%orig;
+			else
+				[self handleSCCVolumeDecreasePressDown];
+		}
+
 		-(void)volumeDecreasePressUp {
-			//[Debug Log:@"volumeDecreasePressUp"];
+			[Debug Log:@"volume decrease released"];
 			%orig;
 
 			if (coinChoice == TAILS)
@@ -251,38 +251,32 @@ void NotifyPreferences() {
 		}
 	%end
 
-%end	//SpringboardHooks
+%end	// end SpringboardHooks
 
 
 %group SiriHooks
 	%hook SiriSharedUICompactServerUtteranceView
 		- (void)_setTextForLabel:(id)arg1 text:(id)arg2 {
-			//[Debug Log:[NSString stringWithFormat:@"- (void)_setTextForLabel  %@", arg2]];
-
 			if (!enabled) {
 				%orig;
 				return;
 			}
 
-			//[Debug Log:[NSString stringWithFormat:@"doing replacement.  original text: %@", arg1]];
+			[Debug Log:[NSString stringWithFormat:@"- (void)_setTextForLabel  %@", arg2]];
 			NSString *newText = ReplaceHeadsAndTails(arg2);
-			//[Debug Log:[NSString stringWithFormat:@"setting text to %@", newText]];
+			[Debug Log:[NSString stringWithFormat:@"setting text to %@", newText]];
 			return %orig(arg1, newText);
 		}
 	%end
 
 	%hook SiriTTSSpeechRequest
 		- (id)initWithText:(id)arg1 voice:(id)arg2 {
-			//[Debug Log:[NSString stringWithFormat:@"- (id)initWithText  arg1: %@", arg1]];
-
-			if (!enabled) {
-				//[Debug Log:@"orig"];
+			if (!enabled)
 				return %orig;
-			}
 
-			//[Debug Log:[NSString stringWithFormat:@"doing replacement.  original text: %@", arg1]];
+			[Debug Log:[NSString stringWithFormat:@"- (id)initWithText  arg1: %@", arg1]];
 			NSString *newText = ReplaceHeadsAndTails(arg1);
-			//[Debug Log:[NSString stringWithFormat:@"setting text to %@", newText]];
+			[Debug Log:[NSString stringWithFormat:@"setting text to %@", newText]];
 			return %orig(newText, arg2);
 		}
 	%end
@@ -293,40 +287,33 @@ void NotifyPreferences() {
 //	=========================== Constructor stuff ===========================
 
 %ctor {
-	NSString *bundleID = NSBundle.mainBundle.bundleIdentifier;
-	//[Debug Log:[NSString stringWithFormat:@"============== started from %@ ==============", bundleID]];
+	bundleID = NSBundle.mainBundle.bundleIdentifier;
+	loggingEnabled = YES; // Enable logging at least until prefs are loaded
+
+	[Debug Log:[NSString stringWithFormat:@"============== started from %@ ==============", bundleID]];
 
 	if ([bundleID isEqualToString:@"com.apple.springboard"]) {
-		//[Debug Log:@"init springboard hooks"];
+		[Debug Log:@"init springboard hooks"];
 		// Setup preferences
 		InitPrefs();
 		UpdatePrefs();
 
-		CFNotificationCenterAddObserver(
-			CFNotificationCenterGetDarwinNotifyCenter(),
-			NULL,
-			&PrefsChangeCallback,
-			BUNDLE_NOTIFY,
-			NULL,
-			0
-		);
-
 		[[NSDistributedNotificationCenter defaultCenter] addObserverForName:COIN_CHOICE_REQUEST object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *notification) {
-			//[Debug Log:[NSString stringWithFormat:@"got coin requyet notification!!  userInfo: %@", [notification.userInfo objectForKey:@"test"]]];
+			[Debug Log:@"got COIN_CHOICE_REQUEST notification!"];
 			NSDictionary *responseData = @{@"coinChoice": @(coinChoice)};
 			[[NSDistributedNotificationCenter defaultCenter] postNotificationName:COIN_CHOICE_RESPONSE object:nil userInfo:responseData];
 
 		}];
 
 		[[NSDistributedNotificationCenter defaultCenter] addObserverForName:PREFS_REQUEST object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *notification) {
-			//[Debug Log:@"got prefs request notification!!"];
+			[Debug Log:@"got PREFS_REQUEST notification!!"];
 			NotifyPreferences();
 		}];
 
 		%init(SpringboardHooks);
 	}
-	if ([bundleID isEqualToString:@"com.apple.siri"]) {
-		//[Debug Log:@"init siri hooks"];
+	else if ([bundleID isEqualToString:@"com.apple.siri"]) {
+		[Debug Log:@"init siri hooks"];
 
 		// Request preferences from SpringBoard since they can't be loaded in Siri for some reason
 		[[NSDistributedNotificationCenter defaultCenter] postNotificationName:PREFS_REQUEST object:nil userInfo:nil];
@@ -334,16 +321,17 @@ void NotifyPreferences() {
 
 		// coinChoice receiver
 		[[NSDistributedNotificationCenter defaultCenter] addObserverForName:COIN_CHOICE_RESPONSE object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *notification) {
-			//[Debug Log:[NSString stringWithFormat:@"siri COIN_CHOICE_RESPONSE!!  userInfo: %li", [[notification.userInfo objectForKey:@"coinChoice"] integerValue]]];
+			[Debug Log:[NSString stringWithFormat:@"got COIN_CHOICE_RESPONSE  notification!! %li", [[notification.userInfo objectForKey:@"coinChoice"] integerValue]]];
 			coinChoice = [[notification.userInfo objectForKey:@"coinChoice"] integerValue];
 		}];
 
 		// preferences receiver
 		[[NSDistributedNotificationCenter defaultCenter] addObserverForName:PREFS_RESPONSE object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *notification) {
-			//[Debug Log:@"siri PREFS_RESPONSE!!"];
+			[Debug Log:@"got PREFS_RESPONSE notification!!"];
 			SetPrefsFromDict(notification.userInfo);
 		}];
 
 		%init(SiriHooks);
 	}
+
 }

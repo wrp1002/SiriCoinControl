@@ -1,4 +1,5 @@
 #import <UIKit/UIKit.h>
+#import "Globals.h"
 
 #define TWEAK_NAME @"SiriCoinControl"
 #define BUNDLE [NSString stringWithFormat:@"com.wrp1002.%@", [TWEAK_NAME lowercaseString]]
